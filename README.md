@@ -1,74 +1,67 @@
-# CrimsonRealm Website by Berlianoel
+# CrimsonRealm Website
 
-Website CrimsonRealm ini dibuat oleh Berlianoel dan dikonfigurasi untuk deployment di Railway, Vercel, dan GitHub Pages.
+Situs web responsif dengan desain modern dan fungsionalitas lengkap.
 
-## Cara Deploy ke Railway
+## Fitur
 
-### Langkah 1: Buat akun Railway
-- Buka [Railway.app](https://railway.app/)
-- Buat akun atau login
+- Halaman utama dengan hero section
+- Halaman tentang kami (About)
+- Halaman kontak dengan formulir
+- Halaman petualangan (Adventures)
+- Halaman destinasi (Destinations)
+- Halaman admin (untuk pengelolaan konten)
+- Desain responsif untuk semua perangkat
 
-### Langkah 2: Buat Project Baru
-1. Klik "New Project" > "Deploy from GitHub"
-2. Hubungkan repository GitHub Anda
-3. Pilih repository yang berisi file CrimsonRealm by Berlianoel
+## Stack Teknologi
 
-### Langkah 3: Konfigurasi Environment Variables
-1. Buka project di Railway
-2. Klik tab "Variables"
-3. Tambahkan variabel berikut:
-   - DATABASE_URL: (otomatis jika menambahkan database)
-   - SESSION_SECRET: (gunakan random string yang aman)
+- **Frontend**: React, TailwindCSS, Shadcn UI
+- **Backend**: Node.js, Express
+- **Database**: PostgreSQL (Neon)
+- **Autentikasi**: Passport.js
+- **ORM**: Drizzle
+- **Deployment**: Vercel, Railway
 
-### Langkah 4: Tambahkan Database PostgreSQL
-1. Klik "New" > "Add PostgreSQL"
-2. Railway akan otomatis membuat database dan menambahkan `DATABASE_URL` ke environment variables
+## Persiapan Deployment
 
-### Langkah 5: Konfigurasi Domain (Opsional)
-1. Buka project di Railway
-2. Klik tab "Settings"
-3. Di bagian "Domains", klik "Generate Domain" atau tambahkan domain khusus
+### Deployment di Vercel
 
-## Cara Deploy ke Vercel
+1. Push kode ke GitHub repository
+2. Login ke [Vercel](https://vercel.com)
+3. Klik "New Project" dan pilih GitHub repository
+4. Masuk ke tab "Environment Variables" dan tambahkan:
+   - `DATABASE_URL` - URL koneksi PostgreSQL
+   - `SESSION_SECRET` - Secret key untuk session (string acak)
+   - `NODE_ENV` - Set ke "production"
+5. Klik "Deploy"
 
-### Langkah 1: Buat akun Vercel
-- Buka [Vercel.com](https://vercel.com/)
-- Buat akun atau login
+### Deployment di Railway
 
-### Langkah 2: Import Project
-1. Klik "Add New" > "Project" 
-2. Hubungkan repository GitHub Anda
-3. Konfigurasi sesuai kebutuhan (Vercel akan otomatis mendeteksi pengaturan dari vercel.json)
-4. Tambahkan environment variable DATABASE_URL dan SESSION_SECRET
+1. Push kode ke GitHub repository
+2. Login ke [Railway](https://railway.app)
+3. Klik "New Project" dan pilih GitHub repository
+4. Tambahkan PostgreSQL plugin dari marketplace
+5. Tambahkan variabel lingkungan:
+   - `SESSION_SECRET` - Secret key untuk session (string acak)
+   - `NODE_ENV` - Set ke "production"
+6. Railway akan secara otomatis mengatur `DATABASE_URL` dan `PORT`
+7. Deploy project
 
-## Cara Deploy ke GitHub Pages
+## Pengaturan Database
 
-GitHub Pages dikonfigurasi melalui GitHub Actions. Setiap kali Anda push ke branch main, website akan otomatis di-build dan di-deploy ke GitHub Pages.
+Sebelum menjalankan aplikasi, siapkan database PostgreSQL:
 
-### Langkah untuk mengaktifkan:
-1. Pastikan repository sudah memiliki secret DATABASE_URL dan SESSION_SECRET
-2. Push kode ke branch main
-3. GitHub Actions akan menjalankan workflow di .github/workflows/github-pages.yml
-4. Website Anda akan tersedia di https://username.github.io/repo-name/
+1. Buat database PostgreSQL (bisa menggunakan Neon, Railway, atau penyedia lainnya)
+2. Simpan URL koneksi sebagai variabel lingkungan `DATABASE_URL`
+3. Schema dan tabel akan dibuat otomatis saat aplikasi pertama kali dijalankan
 
 ## Menjalankan Aplikasi Secara Lokal
 
-```bash
-# Install dependencies
-npm install
+1. Clone repository
+2. Install dependencies: `npm install`
+3. Buat file `.env` berdasarkan `.env.example`
+4. Jalankan aplikasi: `npm run dev`
+5. Buka [http://localhost:5000](http://localhost:5000)
 
-# Jalankan aplikasi
-npm run dev
-```
+## Kredit
 
-Server akan berjalan di http://localhost:5000
-
-## Catatan Penting
-
-- Aplikasi menggunakan port 5000, yang merupakan port standar di Railway
-- Pastikan selalu memiliki database PostgreSQL yang dikonfigurasi dengan benar
-- Gunakan secret key yang aman untuk SESSION_SECRET di environment variables
-
----
-
-**Created by Berlianoel © 2023-2025**
+Website ini dibuat oleh Berlianoel. Semua hak cipta dilindungi.

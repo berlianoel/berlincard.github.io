@@ -1,11 +1,46 @@
+/**
+ * CrimsonRealm API Routes
+ * Copyright © 2023-2025 Berlianoel
+ * All rights reserved.
+ * This entire codebase was created by Berlianoel.
+ */
+
 import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { setupAuth } from "./auth";
 import { insertServiceRequestSchema, insertMessageSchema, insertMessageReplySchema } from "@shared/schema";
 import { z } from "zod";
+import os from "os";
 
 export async function registerRoutes(app: Express): Promise<Server> {
+  // Health check endpoint untuk Railway dan Vercel
+  app.get("/health", (req, res) => {
+    res.status(200).json({
+      status: "ok",
+      timestamp: new Date().toISOString(),
+      uptime: process.uptime(),
+      memory: process.memoryUsage(),
+      hostname: os.hostname(),
+      platform: process.platform,
+      version: process.version
+    });
+  });
+
+  // Root endpoint untuk health check jika dalam mode production
+  app.get("/", (req, res, next) => {
+    if (process.env.NODE_ENV === 'production') {
+      res.status(200).json({ status: "ok" });
+    } else {
+      next();
+    }
+  });
+
+  // User API
+  app.get("/api/user", (req, res) => {
+    res.json(req.user || null);
+  });
+
   // Setup authentication routes
   setupAuth(app);
 

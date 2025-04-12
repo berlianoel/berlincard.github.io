@@ -1,3 +1,10 @@
+/**
+ * CrimsonRealm Authentication System
+ * Copyright © 2023-2025 Berlianoel
+ * All rights reserved.
+ * This entire codebase was created by Berlianoel.
+ */
+
 import passport from "passport";
 import { Strategy as LocalStrategy } from "passport-local";
 import { Express } from "express";

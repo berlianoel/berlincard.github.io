@@ -1,113 +1,114 @@
 # Panduan Deployment CrimsonRealm
 
-Dokumen ini berisi panduan detail dan perbandingan untuk men-deploy aplikasi CrimsonRealm ke tiga platform yang berbeda.
+Dokumen ini berisi langkah-langkah detail untuk deployment aplikasi CrimsonRealm ke Vercel dan Railway.
 
-## Perbandingan Platform
+## Deployment ke Vercel
 
-| Fitur | GitHub Pages | Vercel | Railway |
-|-------|-------------|--------|---------|
-| **Frontend** | ✅ | ✅ | ✅ |
-| **Backend API** | ❌ | ✅ | ✅ |
-| **Database** | ❌ | ❌ (Eksternal) | ✅ |
-| **Full-stack** | Partial | ✅ | ✅ |
-| **CI/CD** | ✅ | ✅ | ✅ |
-| **Custom Domain** | ✅ | ✅ | ✅ |
-| **Harga** | Gratis | Gratis (Batas tertentu) | Gratis (Batas tertentu) |
-| **Performa** | Baik | Sangat Baik | Sangat Baik |
-| **File Config** | `.github/workflows/` | `vercel.json` | `railway.json` |
+### Persiapan
 
-## Pemilihan Platform
+1. Pastikan Anda memiliki akun [Vercel](https://vercel.com) dan telah login
+2. Push kode ke repository GitHub
+3. Hubungkan repository GitHub dengan Vercel
 
-- **GitHub Pages**: Pilihan terbaik untuk static frontend dengan backend API yang terpisah. Mudah diatur dan gratis.
-- **Vercel**: Pilihan terbaik untuk aplikasi full-stack dengan deployment yang cepat dan mudah. Memerlukan database eksternal.
-- **Railway**: Pilihan terbaik untuk aplikasi full-stack dengan database terintegrasi. Memiliki dashboard yang mudah digunakan untuk mengelola layanan.
+### Konfigurasi
 
-## Konfigurasi Platform-Specific
+1. Di dashboard Vercel, pilih "New Project"
+2. Impor repository GitHub yang berisi aplikasi CrimsonRealm
+3. Pada halaman konfigurasi, atur:
+   - **Framework Preset**: Other
+   - **Root Directory**: ./
+   - **Build Command**: npm run build
+   - **Output Directory**: dist
+   - **Install Command**: npm install
 
-### GitHub Pages
+4. Tambahkan variabel lingkungan berikut:
+   - `DATABASE_URL` - URL koneksi PostgreSQL (misalnya dari Neon)
+   - `SESSION_SECRET` - Secret key untuk session (string acak)
+   - `NODE_ENV` - Set ke "production"
 
-CrimsonRealm menggunakan pendekatan khusus untuk GitHub Pages:
+5. Klik "Deploy"
 
-1. **Routing SPA**: Menggunakan 404.html untuk routing client-side yang tidak didukung oleh GitHub Pages secara native.
-2. **Base Path**: Menambahkan `<base>` tag di HTML untuk memastikan resource dimuat dengan benar relatif terhadap base path repositori.
-3. **API Configuration**: Pada GitHub Pages, frontend dihosting terpisah dari API, sehingga konfigurasi API endpoint diatur melalui environment variable `VITE_GITHUB_PAGES_API_URL`.
+### Pemecahan Masalah Umum
 
-Solusi ini memungkinkan single-page application berjalan dengan baik di GitHub Pages.
+1. **Error koneksi database**:
+   - Periksa apakah `DATABASE_URL` sudah benar
+   - Pastikan database sudah dibuat di provider PostgreSQL
+   - Untuk Neon, pastikan opsi "Pooled connection" diaktifkan
 
-### Vercel
+2. **Error CORS**:
+   - Aplikasi sudah mengatur CORS secara otomatis untuk domain Vercel
+   - Jika masih terjadi error, tambahkan domain Vercel ke daftar CORS yang diizinkan
 
-Konfigurasi untuk Vercel berfokus pada:
+3. **Error "Cannot find module"**:
+   - Coba redeploy dengan menambahkan `--include=dev` pada Install Command: `npm install --include=dev`
 
-1. **Server-side Routing**: Menggunakan fitur routing bawaan Vercel untuk mengarahkan semua request ke server/index.ts.
-2. **GitHub Integration**: Mengaktifkan integrasi GitHub untuk deployment otomatis.
-3. **CORS Headers**: Mengonfigurasi header CORS untuk API agar dapat diakses dari frontend di domain yang berbeda.
+## Deployment ke Railway
 
-Kelebihan Vercel adalah kemampuannya untuk hosting API dan frontend dalam satu deployment.
+### Persiapan
 
-### Railway
+1. Pastikan Anda memiliki akun [Railway](https://railway.app) dan telah login
+2. Push kode ke repository GitHub
+3. Hubungkan repository GitHub dengan Railway
 
-Railway memberikan solusi all-in-one:
+### Konfigurasi
 
-1. **Database PostgreSQL**: Railway menyediakan database PostgreSQL terintegrasi yang dioptimalkan untuk aplikasi web.
-2. **Health Checks**: Konfigurasi health check untuk memastikan aplikasi berjalan dengan baik.
-3. **Post-Deploy Scripts**: Otomatisasi migrasi database setelah deployment dengan post-deploy hook.
+1. Di dashboard Railway, pilih "New Project" → "Deploy from GitHub repo"
+2. Pilih repository GitHub yang berisi aplikasi CrimsonRealm
+3. Railway akan secara otomatis mendeteksi konfigurasi dari `railway.json`
 
-Railway adalah pilihan ideal untuk aplikasi full-stack yang membutuhkan database.
+4. Tambahkan database PostgreSQL:
+   - Klik "New" → "Database" → "PostgreSQL"
+   - Railway akan secara otomatis menyediakan `DATABASE_URL`
 
-## Teknologi CI/CD
+5. Tambahkan variabel lingkungan berikut:
+   - `SESSION_SECRET` - Secret key untuk session (string acak)
+   - `NODE_ENV` - Set ke "production"
 
-Aplikasi ini menggunakan GitHub Actions sebagai sistem CI/CD:
+6. Deploy project
 
-1. **Main Workflow**: `.github/workflows/ci-cd.yml` yang membangun, menguji, dan memicu deployment.
-2. **Platform-specific Workflows**:
-   - `.github/workflows/github-pages-deploy.yml`
-   - `.github/workflows/vercel-deploy.yml`
-   - `.github/workflows/railway-deploy.yml`
+### Pemecahan Masalah Umum
 
-Workflow ini menyederhanakan proses deployment dan memastikan kualitas yang konsisten.
+1. **Error build**:
+   - Periksa log build di Railway dashboard
+   - Pastikan file `build-for-deploy.sh` memiliki permission eksekusi
+   - Anda dapat mengubah permission di local dengan: `chmod +x build-for-deploy.sh`
 
-## Konfigurasi Environment
+2. **Error koneksi database**:
+   - Railway menautkan database secara otomatis, periksa tab "Variables" untuk memastikan `DATABASE_URL` telah diatur
 
-Variabel environment yang diperlukan:
+3. **Error runtime**:
+   - Periksa log aplikasi di dashboard Railway
+   - Coba restart service jika diperlukan
 
-### Umum
-- `DATABASE_URL`: URL koneksi database PostgreSQL
-- `SESSION_SECRET`: Secret untuk enkripsi session
-- `NODE_ENV`: `development` atau `production`
+## Pengaturan Database
 
-### GitHub Pages
-- `VITE_GITHUB_PAGES_API_URL`: URL API endpoint yang digunakan oleh GitHub Pages deployment
+Aplikasi CrimsonRealm memerlukan PostgreSQL. Berikut cara menyiapkannya:
 
-### Vercel
-- `VERCEL_TOKEN`: Token API Vercel untuk deployment otomatis
+### Menggunakan Neon (untuk Vercel)
 
-### Railway
-- `RAILWAY_TOKEN`: Token API Railway
-- `RAILWAY_SERVICE_ID`: ID service di Railway
-- `RAILWAY_APP_URL`: URL aplikasi di Railway
+1. Buat akun di [Neon](https://neon.tech)
+2. Buat project baru
+3. Salin connection string dari Neon dashboard
+4. Tambahkan ke variabel lingkungan `DATABASE_URL` di Vercel
 
-## Alur Deployment
+### Menggunakan Railway PostgreSQL
 
-Aplikasi ini mendukung dua metode deployment:
+1. Tambahkan PostgreSQL service di Railway
+2. Railway akan secara otomatis menyediakan variabel `DATABASE_URL`
+3. Tidak diperlukan konfigurasi tambahan
 
-### Manual Deployment
-Menggunakan script `deploy.sh` untuk deployment ke platform pilihan:
+### Skema Database
+
+Aplikasi akan secara otomatis membuat tabel ketika pertama kali berjalan, tetapi Anda juga dapat menjalankan migrasi secara manual:
+
 ```bash
-./deploy.sh [platform]
+DATABASE_URL=your_connection_string npm run db:push
 ```
 
-### Otomatis melalui CI/CD
-Push ke branch `main` akan memicu workflow CI/CD yang akan men-deploy ke semua platform secara otomatis.
+## Catatan Penting
 
-## Troubleshooting
+- Pastikan domain deployment Anda ditambahkan ke variabel `CORS_ORIGIN` jika menggunakan domain kustom
+- Pertama kali deployment, aplikasi akan membuat user admin default dengan username `berlin` dan password `admin`
+- Ganti password default admin segera setelah deployment berhasil
 
-### Cross-Origin Resource Sharing (CORS)
-Karena GitHub Pages memisahkan frontend dan backend, CORS dikonfigurasi dengan benar untuk memastikan API dapat diakses lintas domain.
-
-### Base Path di GitHub Pages
-URI di GitHub Pages mengandung nama repositori yang memerlukan penyesuaian path di aplikasi React. Ini ditangani oleh custom hook di `App.tsx` dan `github-pages-redirect.js`.
-
-### Static Routing
-GitHub Pages tidak mendukung server-side redirects, sehingga routing diimplementasikan dengan kombinasi:
-1. Custom 404.html yang menyimpan path yang diminta dan melakukan redirect ke homepage
-2. Script yang mendeteksi path yang disimpan dan mengarahkan aplikasi React ke halaman yang tepat
+Jika menemui masalah lain, buka issue di repository GitHub atau hubungi dukungan pengembang.

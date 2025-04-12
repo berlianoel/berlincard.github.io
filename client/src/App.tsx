@@ -1,3 +1,10 @@
+/**
+ * CrimsonRealm App Component
+ * Copyright © 2023-2025 Berlianoel
+ * All rights reserved.
+ * This entire codebase was created by Berlianoel.
+ */
+
 import { Switch, Route } from "wouter";
 import { queryClient } from "./lib/queryClient";
 import { QueryClientProvider } from "@tanstack/react-query";

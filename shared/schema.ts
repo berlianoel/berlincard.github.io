@@ -1,3 +1,10 @@
+/**
+ * CrimsonRealm Database Schema
+ * Copyright © 2023-2025 Berlianoel
+ * All rights reserved.
+ * This entire codebase was created by Berlianoel.
+ */
+
 import { pgTable, text, serial, integer, boolean, timestamp, pgEnum } from "drizzle-orm/pg-core";
 import { createInsertSchema, createSelectSchema } from "drizzle-zod";
 import { z } from "zod";
