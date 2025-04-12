@@ -1,0 +1,192 @@
+@import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;500;600;700&family=Poppins:wght@300;400;500;600&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer utilities {
+  .animate-fadeIn {
+    animation: fadeIn 0.3s ease-out forwards;
+  }
+  
+  .animate-scaleIn {
+    animation: scaleIn 0.3s ease-out forwards;
+  }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes scaleIn {
+  from { transform: scale(0.9); opacity: 0; }
+  to { transform: scale(1); opacity: 1; }
+}
+
+/* Set font family for cinzel class */
+.font-cinzel {
+  font-family: 'Cinzel', serif;
+}
+
+/* Glass effect for cards */
+.glass {
+  background: rgba(20, 0, 10, 0.7);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+}
+
+@layer base {
+  :root {
+    --background: 264 30% 5%;
+    --foreground: 240 10% 90%;
+    
+    --card: 270 30% 8%;
+    --card-foreground: 0 0% 90%;
+    
+    --popover: 264 30% 5%;
+    --popover-foreground: 240 10% 90%;
+    
+    --primary: 348 80% 25%;
+    --primary-foreground: 0 0% 98%;
+    
+    --secondary: 240 10% 14%;
+    --secondary-foreground: 0 0% 98%;
+    
+    --muted: 240 5% 20%;
+    --muted-foreground: 240 5% 65%;
+    
+    --accent: 348 80% 25%;
+    --accent-foreground: 0 0% 98%;
+    
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 0 0% 98%;
+    
+    --border: 240 5% 26%;
+    --input: 240 5% 26%;
+    --ring: 348 80% 25%;
+    
+    /* Chart colors */
+    --chart-1: 348 80% 25%;
+    --chart-2: 264 30% 15%;
+    --chart-3: 45 95% 35%;
+    --chart-4: 300 80% 20%;
+    --chart-5: 200 95% 20%;
+    
+    /* Sidebar colors */
+    --sidebar-background: 264 30% 5%;
+    --sidebar-foreground: 240 10% 90%;
+    --sidebar-primary: 348 80% 25%;
+    --sidebar-primary-foreground: 0 0% 98%;
+    --sidebar-accent: 45 95% 35%;
+    --sidebar-accent-foreground: 0 0% 98%;
+    --sidebar-border: 240 5% 26%;
+    --sidebar-ring: 348 80% 25%;
+    
+    --radius: 0.5rem;
+  }
+  
+  * {
+    @apply border-border;
+  }
+  
+  body {
+    @apply font-poppins antialiased bg-background text-foreground;
+    background-color: hsl(var(--background));
+    color: hsl(var(--foreground));
+    overflow-x: hidden;
+  }
+
+  .glass {
+    @apply bg-card/25 backdrop-blur-md border border-border/30;
+  }
+  
+  .card {
+    @apply transition-all duration-300;
+  }
+  
+  .card:hover {
+    @apply transform -translate-y-1 shadow-lg shadow-primary/50;
+  }
+  
+  .portal-animation {
+    animation: portalPulse 2s infinite alternate;
+  }
+  
+  @keyframes portalPulse {
+    0% {
+      box-shadow: 0 0 15px 5px rgba(128, 0, 32, 0.7);
+    }
+    100% {
+      box-shadow: 0 0 25px 10px rgba(128, 0, 32, 0.9);
+    }
+  }
+  
+  .section {
+    @apply opacity-0 transform translate-y-5 transition-all duration-500;
+  }
+  
+  .section.active {
+    @apply opacity-100 translate-y-0;
+  }
+}
+
+@layer utilities {
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none;
+  }
+  
+  .scrollbar-hide {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+  
+  .animate-fade-in {
+    @apply animate-[fadeIn_1s_ease-in_forwards];
+  }
+  
+  .animate-slide-up {
+    @apply animate-[slideUp_0.5s_ease-out_forwards];
+  }
+  
+  .animate-slide-right {
+    @apply animate-[slideRight_0.5s_ease-out_forwards];
+  }
+  
+  .animate-pulse-slow {
+    @apply animate-[pulse_4s_cubic-bezier(0.4,0,0.6,1)_infinite];
+  }
+  
+  .animate-float {
+    @apply animate-[float_6s_ease-in-out_infinite];
+  }
+  
+  .animate-portal-rotate {
+    @apply animate-[portalRotate_20s_linear_infinite];
+  }
+}
+
+@keyframes fadeIn {
+  0% { opacity: 0; }
+  100% { opacity: 1; }
+}
+
+@keyframes slideUp {
+  0% { transform: translateY(20px); opacity: 0; }
+  100% { transform: translateY(0); opacity: 1; }
+}
+
+@keyframes slideRight {
+  0% { transform: translateX(-20px); opacity: 0; }
+  100% { transform: translateX(0); opacity: 1; }
+}
+
+@keyframes float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-10px); }
+}
+
+@keyframes portalRotate {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}

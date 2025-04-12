@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CrimsonRealm - Redirect</title>
+  <script>
+    // Fungsi untuk mengambil segmen URL setelah nama repositori
+    function getPathSegments() {
+      // GitHub Pages URL: https://username.github.io/repo-name/path
+      const path = window.location.pathname;
+      const pathSegments = path.split('/');
+      
+      // Asumsikan GitHub Pages, jika nama repo di URL
+      const repoName = pathSegments[1];
+      const remainingPath = pathSegments.slice(2).join('/');
+      
+      return {
+        repoName,
+        remainingPath
+      };
+    }
+
+    // Redirect ke halaman homepage dengan state untuk router
+    window.onload = function() {
+      const { repoName, remainingPath } = getPathSegments();
+      
+      // Buat URL baru untuk redirect
+      let redirectPath = '/';
+      
+      if (repoName) {
+        // GitHub Pages
+        redirectPath = '/' + repoName + '/';
+      }
+      
+      // Tambahkan query param untuk routing
+      if (remainingPath) {
+        // Gunakan localStorage untuk menyimpan path yang diminta
+        localStorage.setItem('crimsonrealmRedirectPath', '/' + remainingPath);
+      }
+      
+      // Redirect ke homepage
+      window.location.href = redirectPath;
+    };
+  </script>
+</head>
+<body>
+  <div style="font-family: Arial, sans-serif; text-align: center; padding: 50px;">
+    <h1 style="color: #8B0000;">CrimsonRealm</h1>
+    <p>Redirecting to the homepage...</p>
+  </div>
+</body>
+</html>
