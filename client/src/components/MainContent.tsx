@@ -1,158 +1,147 @@
-import { useState, useEffect, useRef } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import Header from './Header';
-import AboutSection from './AboutSection';
-import InterestsSection from './InterestsSection';
-import ByfDniSection from './ByfDniSection';
-import SocialsSection from './SocialsSection';
-import MusicSection from './MusicSection';
-import ServicesSection from './ServicesSection';
-import MessagesSection from './MessagesSection';
-import Footer from './Footer';
-import { useAuth } from '@/hooks/use-auth';
-import { Button } from '@/components/ui/button';
-import { LogIn, LogOut } from 'lucide-react';
-import { useLocation } from 'wouter';
+import { useState } from "react";
+import NavCard from "@/components/ui/NavCard";
+import AboutModal from "@/components/modals/AboutModal";
+import InterestsModal from "@/components/modals/InterestsModal";
+import ByfDniModal from "@/components/modals/ByfDniModal";
+import SocialsModal from "@/components/modals/SocialsModal";
+import MusicModal from "@/components/modals/MusicModal";
+import ServicesModal from "@/components/modals/ServicesModal";
+import SecretMessagesModal from "@/components/modals/SecretMessagesModal";
+import AdminLoginModal from "@/components/modals/AdminLoginModal";
+import AdminDashboardModal from "@/components/modals/AdminDashboardModal";
 
-interface MainContentProps {
-  activeSection: string;
-  setActiveSection: (section: string) => void;
-}
+export default function MainContent() {
+  const [activeModal, setActiveModal] = useState<string | null>(null);
+  const [isAdminLoggedIn, setIsAdminLoggedIn] = useState(false);
 
-export default function MainContent({ activeSection, setActiveSection }: MainContentProps) {
-  const [showAdminModal, setShowAdminModal] = useState(false);
-  const { user, logoutMutation } = useAuth();
-  const [_, navigate] = useLocation();
-
-  // If no active section is set, default to 'about'
-  useEffect(() => {
-    if (!activeSection) {
-      setActiveSection('about');
-    }
-  }, [activeSection, setActiveSection]);
-
-  // Handle scrolling to top
-  const scrollToTop = () => {
-    window.scrollTo({ top: 0, behavior: 'smooth' });
+  const openModal = (modalId: string) => {
+    setActiveModal(modalId);
   };
 
-  const handleLogin = () => {
-    navigate('/auth');
+  const closeModal = () => {
+    setActiveModal(null);
   };
 
-  const handleLogout = async () => {
-    await logoutMutation.mutateAsync();
+  const handleAdminLogin = () => {
+    setActiveModal(null);
+    setIsAdminLoggedIn(true);
+    setTimeout(() => {
+      setActiveModal("admin-dashboard");
+    }, 100);
   };
 
   return (
-    <motion.main
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      transition={{ duration: 0.8 }}
-      className="min-h-screen py-12 px-4 md:px-6 lg:px-8 relative overflow-hidden"
-    >
-      {/* BACKGROUND */}
-      <div className="fixed inset-0 bg-cover bg-center z-[-1]" 
-           style={{backgroundImage: "url('https://i.ibb.co/gFHGbmwB/Crimson-Portal.jpg')"}}></div>
-      <div className="fixed inset-0 bg-gradient-to-b from-background/80 to-background/95 z-[-1]"></div>
-      
-      {/* HEADER */}
-      <Header setActiveSection={setActiveSection} activeSection={activeSection} />
-      
-      {/* CONTENT SECTIONS */}
-      <div className="max-w-4xl mx-auto mt-8">
-        <AnimatePresence mode="wait">
-          {activeSection === 'about' && (
-            <motion.div
-              key="about"
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -20 }}
-              transition={{ duration: 0.5 }}
-            >
-              <AboutSection />
-            </motion.div>
-          )}
+    <main className="animate-fade-in min-h-screen bg-[#0A0A0A]">
+      <div className="container mx-auto px-4 py-10">
+        <div className="flex flex-col items-center justify-center">
+          {/* Profile Image */}
+          <div className="w-28 h-28 rounded-full border-2 border-[#C41E3A] p-1 mb-4">
+            <img 
+              src="https://i.ibb.co/pvQ6d1y5/46391e8d-b233-4034-88db-892d2fa27bdc.jpg" 
+              alt="Profile" 
+              className="w-full h-full object-cover rounded-full"
+            />
+          </div>
           
-          {activeSection === 'interests' && (
-            <motion.div
-              key="interests"
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -20 }}
-              transition={{ duration: 0.5 }}
-            >
-              <InterestsSection />
-            </motion.div>
-          )}
+          {/* Profile Name */}
+          <h1 className="text-3xl font-bold text-[#C41E3A] mb-2">BERLINNAD</h1>
           
-          {activeSection === 'byf-dni' && (
-            <motion.div
-              key="byf-dni"
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -20 }}
-              transition={{ duration: 0.5 }}
-            >
-              <ByfDniSection />
-            </motion.div>
-          )}
+          {/* Quote */}
+          <p className="text-center text-gray-300 italic mb-8 max-w-md">
+            "Where darkness meets royalty, I rule with code and creativity."
+          </p>
           
-          {activeSection === 'socials' && (
-            <motion.div
-              key="socials"
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -20 }}
-              transition={{ duration: 0.5 }}
-            >
-              <SocialsSection />
-            </motion.div>
-          )}
+          {/* Navigation Cards */}
+          <div className="grid grid-cols-2 gap-4 w-full max-w-md mb-4">
+            <NavCard 
+              icon="fas fa-user-circle" 
+              label="ABOUT ME" 
+              onClick={() => openModal("about")}
+            />
+            <NavCard 
+              icon="fas fa-star" 
+              label="INTERESTS" 
+              onClick={() => openModal("interests")}
+            />
+            <NavCard 
+              icon="fas fa-exclamation-circle" 
+              label="BYF / DNI" 
+              onClick={() => openModal("byf-dni")}
+            />
+            <NavCard 
+              icon="fas fa-share-alt" 
+              label="SOCIALS" 
+              onClick={() => openModal("socials")}
+            />
+            <NavCard 
+              icon="fas fa-music" 
+              label="MUSIC" 
+              onClick={() => openModal("music")}
+            />
+            <NavCard 
+              icon="fas fa-crown" 
+              label="SERVICES" 
+              onClick={() => openModal("services")}
+            />
+          </div>
           
-          {activeSection === 'music' && (
-            <motion.div
-              key="music"
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -20 }}
-              transition={{ duration: 0.5 }}
-            >
-              <MusicSection />
-            </motion.div>
-          )}
+          {/* Secret Messages (Full Width) */}
+          <NavCard 
+            icon="fas fa-comment-dots" 
+            label="SECRET MESSAGES" 
+            onClick={() => openModal("secret-messages")}
+            fullWidth
+          />
           
-          {activeSection === 'services' && (
-            <motion.div
-              key="services"
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -20 }}
-              transition={{ duration: 0.5 }}
-            >
-              <ServicesSection />
-            </motion.div>
-          )}
-          
-          {activeSection === 'messages' && (
-            <motion.div
-              key="messages"
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -20 }}
-              transition={{ duration: 0.5 }}
-            >
-              <MessagesSection />
-            </motion.div>
-          )}
-        </AnimatePresence>
+          {/* Admin Button */}
+          <button 
+            onClick={() => openModal("admin-login")}
+            className="mt-12 text-xs text-gray-700 hover:text-gray-500"
+          >
+            ·
+          </button>
+        </div>
       </div>
+
+      {/* Modals */}
+      {activeModal === "about" && (
+        <AboutModal onClose={closeModal} />
+      )}
       
-      {/* FOOTER */}
-      <Footer 
-        scrollToTop={scrollToTop} 
-        showAdminModal={() => setShowAdminModal(true)} 
-      />
-    </motion.main>
+      {activeModal === "interests" && (
+        <InterestsModal onClose={closeModal} />
+      )}
+      
+      {activeModal === "byf-dni" && (
+        <ByfDniModal onClose={closeModal} />
+      )}
+      
+      {activeModal === "socials" && (
+        <SocialsModal onClose={closeModal} />
+      )}
+      
+      {activeModal === "music" && (
+        <MusicModal onClose={closeModal} />
+      )}
+      
+      {activeModal === "services" && (
+        <ServicesModal onClose={closeModal} />
+      )}
+      
+      {activeModal === "secret-messages" && (
+        <SecretMessagesModal onClose={closeModal} />
+      )}
+      
+      {activeModal === "admin-login" && (
+        <AdminLoginModal 
+          onClose={closeModal} 
+          onLogin={handleAdminLogin} 
+        />
+      )}
+      
+      {activeModal === "admin-dashboard" && isAdminLoggedIn && (
+        <AdminDashboardModal onClose={closeModal} />
+      )}
+    </main>
   );
 }

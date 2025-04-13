@@ -1,162 +1,85 @@
-/**
- * CrimsonRealm API Routes
- * Copyright © 2023-2025 Berlianoel
- * All rights reserved.
- * This entire codebase was created by Berlianoel.
- */
-
 import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
-import { setupAuth } from "./auth";
-import { insertServiceRequestSchema, insertMessageSchema, insertMessageReplySchema } from "@shared/schema";
+import { insertSecretMessageSchema, insertServiceOrderSchema } from "@shared/schema";
 import { z } from "zod";
-import os from "os";
 
 export async function registerRoutes(app: Express): Promise<Server> {
-  // Health check endpoint untuk Railway dan Vercel
-  app.get("/health", (req, res) => {
-    res.status(200).json({
-      status: "ok",
-      timestamp: new Date().toISOString(),
-      uptime: process.uptime(),
-      memory: process.memoryUsage(),
-      hostname: os.hostname(),
-      platform: process.platform,
-      version: process.version
-    });
-  });
-
-  // Root endpoint untuk health check jika dalam mode production
-  app.get("/", (req, res, next) => {
-    if (process.env.NODE_ENV === 'production') {
-      res.status(200).json({ status: "ok" });
-    } else {
-      next();
-    }
-  });
-
-  // User API
-  app.get("/api/user", (req, res) => {
-    res.json(req.user || null);
-  });
-
-  // Setup authentication routes
-  setupAuth(app);
-
-  // Service requests API
-  app.post("/api/services", async (req, res, next) => {
+  // Secret Messages API
+  app.get("/api/messages", async (req, res) => {
     try {
-      const validatedData = insertServiceRequestSchema.parse(req.body);
-      const serviceRequest = await storage.createServiceRequest(validatedData);
-      res.status(201).json(serviceRequest);
+      const messages = await storage.getAllSecretMessages();
+      res.json(messages);
     } catch (error) {
-      if (error instanceof z.ZodError) {
-        return res.status(400).json({ message: "Invalid request data", errors: error.errors });
-      }
-      next(error);
+      res.status(500).json({ message: "Error fetching messages" });
     }
   });
 
-  app.get("/api/services", async (req, res, next) => {
+  app.post("/api/messages", async (req, res) => {
     try {
-      if (!req.isAuthenticated() || !req.user.isAdmin) {
-        return res.status(403).json({ message: "Unauthorized" });
-      }
-      
-      const serviceRequests = await storage.getServiceRequests();
-      res.json(serviceRequests);
-    } catch (error) {
-      next(error);
-    }
-  });
-
-  app.put("/api/services/:id/complete", async (req, res, next) => {
-    try {
-      if (!req.isAuthenticated() || !req.user.isAdmin) {
-        return res.status(403).json({ message: "Unauthorized" });
-      }
-      
-      const id = parseInt(req.params.id);
-      if (isNaN(id)) {
-        return res.status(400).json({ message: "Invalid ID" });
-      }
-      
-      const serviceRequest = await storage.completeServiceRequest(id);
-      if (!serviceRequest) {
-        return res.status(404).json({ message: "Service request not found" });
-      }
-      
-      res.json(serviceRequest);
-    } catch (error) {
-      next(error);
-    }
-  });
-
-  app.delete("/api/services/:id", async (req, res, next) => {
-    try {
-      if (!req.isAuthenticated() || !req.user.isAdmin) {
-        return res.status(403).json({ message: "Unauthorized" });
-      }
-      
-      const id = parseInt(req.params.id);
-      if (isNaN(id)) {
-        return res.status(400).json({ message: "Invalid ID" });
-      }
-      
-      await storage.deleteServiceRequest(id);
-      res.status(204).end();
-    } catch (error) {
-      next(error);
-    }
-  });
-
-  // Messages API
-  app.post("/api/messages", async (req, res, next) => {
-    try {
-      const validatedData = insertMessageSchema.parse(req.body);
-      const message = await storage.createMessage(validatedData);
+      const data = insertSecretMessageSchema.parse(req.body);
+      const message = await storage.createSecretMessage(data);
       res.status(201).json(message);
     } catch (error) {
       if (error instanceof z.ZodError) {
-        return res.status(400).json({ message: "Invalid message data", errors: error.errors });
+        res.status(400).json({ message: "Invalid message data", error });
+      } else {
+        res.status(500).json({ message: "Error creating message" });
       }
-      next(error);
     }
   });
 
-  app.get("/api/messages", async (req, res, next) => {
+  app.delete("/api/messages/:id", async (req, res) => {
     try {
-      const messages = await storage.getMessages();
-      res.json(messages);
+      const id = parseInt(req.params.id);
+      await storage.deleteSecretMessage(id);
+      res.status(204).end();
     } catch (error) {
-      next(error);
+      res.status(500).json({ message: "Error deleting message" });
     }
   });
 
-  app.post("/api/messages/:id/replies", async (req, res, next) => {
+  // Service Orders API
+  app.get("/api/orders", async (req, res) => {
     try {
-      if (!req.isAuthenticated() || !req.user.isAdmin) {
-        return res.status(403).json({ message: "Unauthorized" });
-      }
-      
-      const messageId = parseInt(req.params.id);
-      if (isNaN(messageId)) {
-        return res.status(400).json({ message: "Invalid message ID" });
-      }
-      
-      const validatedData = insertMessageReplySchema.parse({
-        messageId,
-        content: req.body.content,
-      });
-      
-      const reply = await storage.createMessageReply(validatedData);
-      res.status(201).json(reply);
+      const orders = await storage.getAllServiceOrders();
+      res.json(orders);
+    } catch (error) {
+      res.status(500).json({ message: "Error fetching orders" });
+    }
+  });
+
+  app.post("/api/orders", async (req, res) => {
+    try {
+      const data = insertServiceOrderSchema.parse(req.body);
+      const order = await storage.createServiceOrder(data);
+      res.status(201).json(order);
     } catch (error) {
       if (error instanceof z.ZodError) {
-        return res.status(400).json({ message: "Invalid reply data", errors: error.errors });
+        res.status(400).json({ message: "Invalid order data", error });
+      } else {
+        res.status(500).json({ message: "Error creating order" });
       }
-      next(error);
+    }
+  });
+
+  app.patch("/api/orders/:id/complete", async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const order = await storage.completeServiceOrder(id);
+      res.json(order);
+    } catch (error) {
+      res.status(500).json({ message: "Error updating order" });
+    }
+  });
+
+  app.delete("/api/orders/:id", async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      await storage.deleteServiceOrder(id);
+      res.status(204).end();
+    } catch (error) {
+      res.status(500).json({ message: "Error deleting order" });
     }
   });
 

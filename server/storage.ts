@@ -1,173 +1,126 @@
-/**
- * CrimsonRealm Storage System
- * Copyright © 2023-2025 Berlianoel
- * All rights reserved.
- * This entire codebase was created by Berlianoel.
- */
-
 import { 
   users, type User, type InsertUser,
-  serviceRequests, type ServiceRequest, type InsertServiceRequest,
-  messages, type Message, type InsertMessage,
-  messageReplies, type MessageReply, type InsertMessageReply
+  secretMessages, type SecretMessage, type InsertSecretMessage,
+  serviceOrders, type ServiceOrder, type InsertServiceOrder 
 } from "@shared/schema";
-import { db, pool } from "./db";
-import { eq, desc } from "drizzle-orm";
-import session from "express-session";
-import connectPgSimple from "connect-pg-simple";
-import { FileStorage } from "./file-storage";
 
-// Interface untuk storage
 export interface IStorage {
-  // User methods
+  // Users
   getUser(id: number): Promise<User | undefined>;
   getUserByUsername(username: string): Promise<User | undefined>;
   createUser(user: InsertUser): Promise<User>;
   
-  // Service request methods
-  createServiceRequest(request: InsertServiceRequest): Promise<ServiceRequest>;
-  getServiceRequests(): Promise<ServiceRequest[]>;
-  completeServiceRequest(id: number): Promise<ServiceRequest | undefined>;
-  deleteServiceRequest(id: number): Promise<void>;
+  // Secret Messages
+  getAllSecretMessages(): Promise<SecretMessage[]>;
+  getSecretMessage(id: number): Promise<SecretMessage | undefined>;
+  createSecretMessage(message: InsertSecretMessage): Promise<SecretMessage>;
+  deleteSecretMessage(id: number): Promise<void>;
   
-  // Message methods
-  createMessage(message: InsertMessage): Promise<Message>;
-  getMessages(): Promise<(Message & { replies: MessageReply[] })[]>;
-  createMessageReply(reply: InsertMessageReply): Promise<MessageReply>;
-  
-  // Session store - bisa berupa memorystore atau pg store
-  sessionStore: any;
+  // Service Orders
+  getAllServiceOrders(): Promise<ServiceOrder[]>;
+  getServiceOrder(id: number): Promise<ServiceOrder | undefined>;
+  createServiceOrder(order: InsertServiceOrder): Promise<ServiceOrder>;
+  completeServiceOrder(id: number): Promise<ServiceOrder>;
+  deleteServiceOrder(id: number): Promise<void>;
 }
 
-// Implementasi storage dengan PostgreSQL
-export class DatabaseStorage implements IStorage {
-  sessionStore: any;
-  
+export class MemStorage implements IStorage {
+  private users: Map<number, User>;
+  private messages: Map<number, SecretMessage>;
+  private orders: Map<number, ServiceOrder>;
+  private currentUserId: number;
+  private currentMessageId: number;
+  private currentOrderId: number;
+
   constructor() {
-    const PostgresSessionStore = connectPgSimple(session);
-    this.sessionStore = new PostgresSessionStore({ 
-      pool, 
-      createTableIfMissing: true 
-    });
+    this.users = new Map();
+    this.messages = new Map();
+    this.orders = new Map();
+    this.currentUserId = 1;
+    this.currentMessageId = 1;
+    this.currentOrderId = 1;
   }
 
   // User methods
   async getUser(id: number): Promise<User | undefined> {
-    const [user] = await db.select().from(users).where(eq(users.id, id));
-    return user;
+    return this.users.get(id);
   }
 
   async getUserByUsername(username: string): Promise<User | undefined> {
-    const [user] = await db.select().from(users).where(eq(users.username, username));
-    return user;
+    return Array.from(this.users.values()).find(
+      (user) => user.username === username,
+    );
   }
 
   async createUser(insertUser: InsertUser): Promise<User> {
-    const [user] = await db
-      .insert(users)
-      .values(insertUser)
-      .returning();
+    const id = this.currentUserId++;
+    const user: User = { ...insertUser, id };
+    this.users.set(id, user);
     return user;
   }
-  
-  // Service request methods
-  async createServiceRequest(request: InsertServiceRequest): Promise<ServiceRequest> {
-    const [serviceRequest] = await db
-      .insert(serviceRequests)
-      .values(request)
-      .returning();
-    return serviceRequest;
+
+  // Secret Message methods
+  async getAllSecretMessages(): Promise<SecretMessage[]> {
+    return Array.from(this.messages.values()).sort(
+      (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()
+    );
   }
-  
-  async getServiceRequests(): Promise<ServiceRequest[]> {
-    return db
-      .select()
-      .from(serviceRequests)
-      .orderBy(desc(serviceRequests.createdAt));
+
+  async getSecretMessage(id: number): Promise<SecretMessage | undefined> {
+    return this.messages.get(id);
   }
-  
-  async completeServiceRequest(id: number): Promise<ServiceRequest | undefined> {
-    const [serviceRequest] = await db
-      .update(serviceRequests)
-      .set({ completed: true })
-      .where(eq(serviceRequests.id, id))
-      .returning();
-    return serviceRequest;
+
+  async createSecretMessage(insertMessage: InsertSecretMessage): Promise<SecretMessage> {
+    const id = this.currentMessageId++;
+    const message: SecretMessage = { 
+      ...insertMessage, 
+      id, 
+      date: new Date() 
+    };
+    this.messages.set(id, message);
+    return message;
   }
-  
-  async deleteServiceRequest(id: number): Promise<void> {
-    await db
-      .delete(serviceRequests)
-      .where(eq(serviceRequests.id, id));
+
+  async deleteSecretMessage(id: number): Promise<void> {
+    this.messages.delete(id);
   }
-  
-  // Message methods
-  async createMessage(message: InsertMessage): Promise<Message> {
-    const [newMessage] = await db
-      .insert(messages)
-      .values(message)
-      .returning();
-    return newMessage;
+
+  // Service Order methods
+  async getAllServiceOrders(): Promise<ServiceOrder[]> {
+    return Array.from(this.orders.values()).sort(
+      (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()
+    );
   }
-  
-  async getMessages(): Promise<(Message & { replies: MessageReply[] })[]> {
-    const allMessages = await db
-      .select()
-      .from(messages)
-      .where(eq(messages.status, 'active'))
-      .orderBy(desc(messages.createdAt));
-    
-    const result = [];
-    
-    for (const message of allMessages) {
-      const messageRepliesData = await db
-        .select()
-        .from(messageReplies)
-        .where(eq(messageReplies.messageId, message.id))
-        .orderBy(messageReplies.createdAt);
-      
-      result.push({
-        ...message,
-        replies: messageRepliesData,
-      });
+
+  async getServiceOrder(id: number): Promise<ServiceOrder | undefined> {
+    return this.orders.get(id);
+  }
+
+  async createServiceOrder(insertOrder: InsertServiceOrder): Promise<ServiceOrder> {
+    const id = this.currentOrderId++;
+    const order: ServiceOrder = { 
+      ...insertOrder, 
+      id, 
+      date: new Date() 
+    };
+    this.orders.set(id, order);
+    return order;
+  }
+
+  async completeServiceOrder(id: number): Promise<ServiceOrder> {
+    const order = this.orders.get(id);
+    if (!order) {
+      throw new Error(`Service order with ID ${id} not found`);
     }
     
-    return result;
+    const updatedOrder = { ...order, completed: true };
+    this.orders.set(id, updatedOrder);
+    return updatedOrder;
   }
-  
-  async createMessageReply(reply: InsertMessageReply): Promise<MessageReply> {
-    const [newReply] = await db
-      .insert(messageReplies)
-      .values(reply)
-      .returning();
-    return newReply;
+
+  async deleteServiceOrder(id: number): Promise<void> {
+    this.orders.delete(id);
   }
 }
 
-// Pilih implementasi storage berdasarkan konfigurasi
-function selectStorage(): IStorage {
-  // Kondisi untuk memilih file storage (deployment tanpa database)
-  // - Tidak ada DATABASE_URL
-  // - Ada USE_FILE_STORAGE=true dalam environment
-  // - Kondisi lain sesuai kebutuhan
-  const useFileStorage = !process.env.DATABASE_URL || 
-                        process.env.USE_FILE_STORAGE === 'true' ||
-                        process.env.NODE_ENV === 'production';
-  
-  if (useFileStorage) {
-    console.log("Using file-based storage for deployment");
-    return new FileStorage();
-  } else {
-    try {
-      console.log("Using database storage");
-      return new DatabaseStorage();
-    } catch (error) {
-      console.error("Error initializing database storage:", error);
-      console.log("Falling back to file-based storage");
-      return new FileStorage();
-    }
-  }
-}
-
-// Export instance storage yang digunakan aplikasi
-export const storage = selectStorage();
+export const storage = new MemStorage();

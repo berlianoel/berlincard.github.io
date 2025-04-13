@@ -1,13 +1,6 @@
-/**
- * CrimsonRealm Website
- * Copyright © 2023-2025 Berlianoel
- * All rights reserved.
- * This entire codebase was created by Berlianoel.
- */
-
 import express, { type Request, Response, NextFunction } from "express";
-import { registerRoutes } from "./routes"; // Created by Berlianoel
-import { setupVite, serveStatic, log } from "./vite"; // Created by Berlianoel
+import { registerRoutes } from "./routes";
+import { setupVite, serveStatic, log } from "./vite";
 
 const app = express();
 app.use(express.json());
